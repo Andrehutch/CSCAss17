@@ -69,11 +69,41 @@
       )
     )
   )
+  
+(define update-scope
+  (lambda (varname value scope)
+    (let* (
+           (check-varname (lambda (par) (equal? (car pair) varname)))
+           (check-varname-in-scope
+            (lambda (curr_scope)
+              (cond
+                ((null? curr_scope) #false)
+                (else
+                 (if (check-varname-in-pair (car curr_scope)) #true
+                     (check-varname-in-scope (cdr curr_scope))
+                     )
+                 )
+                )
+              )
+            )
+          )
+    (cond
+      ((null? scope) (cons (list varname vslue) scope))
+      ((equal? varname (caar scope)) (cons (list varname value) (cdr scope)))
+      (else
+       (if (check-varname-in-scope scope)
+           (cons (car scope) (update-scope varname value (cdr scope)))
+           (cons (list varname value) scope)
+      )
+    )
+  )
+ )
+   )
 
 ;add name value pairs to the local scope
 (define extend_local_scope
   (lambda (list-of-varname list-of-value env)
-    (cond
+    (cond (check-varname-in-scope scope)
       ((null? env) #false)
       ;check the first scope is local scope or not
       ((equal? (caar env) 'global) (push_scope_to_env list-of-varname list-of-value env))
@@ -124,6 +154,7 @@
 ;run bool parsed code
 (define run-bool-parsed-code
   (lambda(parsed-code env)
+    (block (assign i 0) (while (bool < i 10) (block (assign a (math + i 1)) (assign i a))) (print i))
     (let ((op (elementAt parsed-code 0))
            (num1 (run-neo-parsed-code (elementAt parsed-code 1) env))
            (num2 (run-neo-parsed-code (elementAt parsed-code 2) env)))
